@@ -1,0 +1,17 @@
+// Clearfix
+
+@mixin clearfix {
+  &:after {
+    content: '';
+    display: table;
+    clear: both;
+  }
+}
+
+// Transform
+
+@mixin transform($value...) {
+  -webkit-transform: $value;
+      -ms-transform: $value;
+          transform: $value;
+}
