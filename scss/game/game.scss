@@ -80,6 +80,7 @@
         z-index: 10; // Place above all other layers
 
         &:before {
+          display: block;
           color: $c-text-on-primary;
         }
       }
@@ -125,6 +126,21 @@
     width: calc(100% - #{$gutter * 2});
   }
 
+  @mixin gameEnded($message) {
+    ~ .end-overlay,
+    ~ .end-message {
+      display: block;
+    }
+    ~ .end-message {
+      &:before {
+        content: '#{$message}';
+      }
+    }
+    ~ .btn-restart {
+      display: inline-block;
+    }
+  }
+
   // Game loop
 
   @for $layer from 1 through $layers {
@@ -151,10 +167,6 @@
           } @else {
             background-color: $c-cross;
           }
-
-          &:before {
-            display: block;
-          }
         }
       }
     }
@@ -167,25 +179,30 @@
             display: block;
           }
         } @else {
-          ~ .end-overlay,
-          ~ .end-message {
-            display: block;
-          }
-          ~ .end-message {
-            &:before {
-              content: "It's a draw!";
-            }
-          }
-          ~ .btn-restart {
-            display: inline-block;
-          }
+          // Draw
+          @include gameEnded("It's a draw!");
         }
       }
     }
 
-    // TODO: Create mixin for winner/draw messages
-    // Check if anyone has won
+  }
 
+  // Check who won
+  @for $i from 1 through 2 {
+    .p-#{$i}.first-col:checked ~ .p-#{$i}.first-col:checked ~ .p-#{$i}.first-col:checked,
+    .p-#{$i}.second-col:checked ~ .p-#{$i}.second-col:checked ~ .p-#{$i}.second-col:checked,
+    .p-#{$i}.third-col:checked ~ .p-#{$i}.third-col:checked ~ .p-#{$i}.third-col:checked,
+    .p-#{$i}.first-row:checked ~ .p-#{$i}.first-row:checked ~ .p-#{$i}.first-row:checked,
+    .p-#{$i}.second-row:checked ~ .p-#{$i}.second-row:checked ~ .p-#{$i}.second-row:checked,
+    .p-#{$i}.third-row:checked ~ .p-#{$i}.third-row:checked ~ .p-#{$i}.third-row:checked,
+    .p-#{$i}.first-diagonal:checked ~ .p-#{$i}.first-diagonal:checked ~ .p-#{$i}.first-diagonal:checked,
+    .p-#{$i}.second-diagonal:checked ~ .p-#{$i}.second-diagonal:checked ~ .p-#{$i}.second-diagonal:checked {
+      @if ($i == 1) {
+        @include gameEnded("Cross is the winner!");
+      } @else {
+        @include gameEnded("Circle is the winner!");
+      }
+    }
   }
 }
 @include tic-tac-toe;
