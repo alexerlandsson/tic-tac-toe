@@ -1,0 +1,230 @@
+// Variables
+
+$c-bg: #fff;
+$c-primary: #212121;
+$c-text-on-primary: #fff;
+$c-player-1: #ec4747;
+$c-player-2: #4e4eff;
+$gutter: 5px;
+
+// Mixins
+
+@mixin transform($value...) {
+  -webkit-transform: $value;
+      -ms-transform: $value;
+          transform: $value;
+}
+
+// Base Styling
+
+* {
+  &,
+  &:before,
+  &:after {
+    box-sizing: border-box;
+  }
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: $c-bg;
+  font-family: sans-serif;
+}
+
+// Game
+
+.tic-tac-toe {
+  @include transform(translate(-50%, -50%));
+  width: 100%;
+  max-width: 600px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: ($gutter * 2);
+}
+
+.board {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+}
+
+.box {
+  position: absolute;
+  display: none;
+  width: 33.333%;
+  height: 0;
+  padding-bottom: calc(33.333% - #{$gutter * 2});
+  float: left;
+  background-color: $c-primary;
+  border: $gutter solid $c-bg;
+  border-radius: ($gutter * 3);
+  cursor: pointer;
+
+  &:before {
+    @include transform(translate(-50%, -50%));
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: none;
+    color: lighten($c-primary, 50%);
+    font-size: 3em;
+  }
+
+  &:hover {
+    background-color: lighten($c-primary, 10%);
+
+    &:before {
+      display: block;
+    }
+  }
+
+  &.box-1, &.box-2, &.box-3 { top: 0; }
+  &.box-4, &.box-5, &.box-6 { top: 33.333%; }
+  &.box-7, &.box-8, &.box-9 { top: 66.666%; }
+  &.box-1, &.box-4, &.box-7 { left: 0;}
+  &.box-2, &.box-5, &.box-8 { left: 33.333%; }
+  &.box-3, &.box-6, &.box-9 { left: 66.666%; }
+}
+
+.end-overlay,
+.end-message,
+.btn-restart {
+  display: none;
+}
+
+.end-overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 15;
+}
+
+.end-message {
+  position: absolute;
+  bottom: calc(100% + #{$gutter});
+  text-align: center;
+  width: 100%;
+  font-size: 2em;
+}
+
+.btn-restart {
+  @include transform(translateX(-50%));
+  position: absolute;
+  top: calc(100% + #{$gutter});
+  left: 50%;
+  text-align: center;
+  text-decoration: none;
+  background-color: $c-primary;
+  color: $c-text-on-primary;
+  padding: $gutter * 5 $gutter * 5;
+  border-radius: 5px;
+  width: calc(100% - #{$gutter * 2});
+}
+
+input[type="radio"] {
+  position: fixed;
+  top: -99999px;
+
+  &:checked {
+    + .box {
+      z-index: 10; // Place above all other layers
+
+      &:before {
+        display: block;
+        color: $c-text-on-primary;
+      }
+    }
+  }
+
+  &[name='layer-1'] {
+    + .box {
+      display: block;
+    }
+  }
+
+  // Change background color and marks
+  @for $i from 1 through 2 {
+    &.p-#{$i} {
+      &:checked {
+        + .box {
+          @if ($i == 1) {
+            background-color: $c-player-1;
+          } @else {
+            background-color: $c-player-2;
+          }
+        }
+      }
+
+      + .box {
+        &:before {
+          @if ($i == 1) {
+            content: "X";
+          } @else {
+            content: "O";
+          }
+        }
+      }
+    }
+  }
+}
+
+// Handle end message
+@mixin gameEnded($message) {
+  ~ .end-overlay,
+  ~ .end-message {
+    display: block;
+  }
+  ~ .end-message {
+    &:before {
+      content: '#{$message}';
+    }
+  }
+  ~ .btn-restart {
+    display: inline-block;
+  }
+}
+
+// Change player
+@for $layer from 1 through 9 {
+  // Change layer when turn is over
+  input[name='layer-#{$layer}'] {
+    &:checked {
+      @if ($layer < 9) {
+        ~ input[name='layer-#{$layer + 1}'] {
+          + .box {
+            display: block;
+          }
+        }
+      } @else {
+        // Draw
+        @include gameEnded("It's a draw!");
+      }
+    }
+  }
+}
+
+// Check who won
+@for $i from 1 through 2 {
+  .p-#{$i}.first-col:checked ~ .p-#{$i}.first-col:checked ~ .p-#{$i}.first-col:checked,
+  .p-#{$i}.second-col:checked ~ .p-#{$i}.second-col:checked ~ .p-#{$i}.second-col:checked,
+  .p-#{$i}.third-col:checked ~ .p-#{$i}.third-col:checked ~ .p-#{$i}.third-col:checked,
+  .p-#{$i}.first-row:checked ~ .p-#{$i}.first-row:checked ~ .p-#{$i}.first-row:checked,
+  .p-#{$i}.second-row:checked ~ .p-#{$i}.second-row:checked ~ .p-#{$i}.second-row:checked,
+  .p-#{$i}.third-row:checked ~ .p-#{$i}.third-row:checked ~ .p-#{$i}.third-row:checked,
+  .p-#{$i}.first-diagonal:checked ~ .p-#{$i}.first-diagonal:checked ~ .p-#{$i}.first-diagonal:checked,
+  .p-#{$i}.second-diagonal:checked ~ .p-#{$i}.second-diagonal:checked ~ .p-#{$i}.second-diagonal:checked {
+    @if ($i == 1) {
+      @include gameEnded("Cross is the winner!");
+    } @else {
+      @include gameEnded("Circle is the winner!");
+    }
+  }
+}

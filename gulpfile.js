@@ -11,7 +11,7 @@ gulp.task('watch', function() {
 
 // Sass
 gulp.task('sass', function () {
-  gulp.src('./scss/default.scss')
+  gulp.src('./scss/game.scss')
     .pipe(sass())
     .pipe(rename({suffix: '.min'}))
     .pipe(minifycss())
